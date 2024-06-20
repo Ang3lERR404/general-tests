@@ -12,12 +12,13 @@ pub const errors = error{
 const mem = std.mem;
 const heap = std.heap;
 const debug = std.debug;
+const testing = std.testing;
 
 const Allocat = mem.Allocator;
 
 const print = debug.print;
 const assert = debug.assert;
-const expect = std.testing.expect;
+const expect = testing.expect;
 
 /// The data that is being stored
 data:[]u8,
@@ -62,7 +63,7 @@ pub fn clear(this:*This, s:usize, e:usize) void {
 }
 
 /// Allocate memory/Resize memory to the passed size.
-pub fn alloc(this:*This, size:usize) errors!void {
+pub fn alloc(this:*This, comptime size:usize) errors!void {
   const oL = this.len;
   if (this.len > 0) {
     if (size < this.len) this.len = size;
@@ -75,6 +76,14 @@ pub fn alloc(this:*This, size:usize) errors!void {
   this.data = this.cat.alloc(u8, size) catch return errors.AllocateFailure;
   this.len = this.data.len;
   this.clear(0, this.len);
+}
+
+/// Add to the already existing allocated size.
+pub fn addAlloc(this:*This, comptime size:usize) errors!void {
+  const oL = this.len;
+  this.data = this.cat.realloc(this.data, oL + size) catch return errors.AllocateFailure;
+  this.clear(oL, this.data.len);
+  this.len = this.data.len;
 }
 
 /// Plainly writes data to our string whilst not being connected to
@@ -105,7 +114,7 @@ pub fn eql(this:*This, str:anytype) bool {
   return std.mem.eql(u8, this.data, str);
 }
 
-const pageCat = heap.page_allocator;
+const pageCat = testing.allocator;
 test {
   print("Is string empty?..", .{});
   var str = This.init(pageCat);
@@ -122,7 +131,7 @@ test {
   assert(str.eql("hello"));
   print(" yes[2/4]\nCan expand correctly?..", .{});
 
-  try str.alloc(11);
+  try str.addAlloc(6);
   assert(str.len == 11);
   print(" yes[3/4]\nCan append correctly?..", .{});
 
