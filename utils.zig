@@ -76,9 +76,6 @@ pub inline fn BMHPP(pattern:[]const u8, table:*[256]usize, rev:bool) void {
   }
 }
 
-
-
-
 // TODO: YET TO BE IMPLIMENTED
 /// YET TO BE IMPLIMENTED, DO NOT USE. 
 pub const indexi = struct{
@@ -94,7 +91,7 @@ pub const indexi = struct{
       i = start;
       return switch (true) {
         start >= slice.len => null,
-        backend.supportsVectors and !std.debug.inValgrind() and !@inComptime()
+        backend.supportsVectors and !std.debug.inValgrind()
         and (@typeInfo(T) == (.Int or .Float))
         and std.math.isPowerOfTwo(@bitSizeOf(T)) => {
 
@@ -103,3 +100,7 @@ pub const indexi = struct{
     }
   }
 };
+
+pub fn ccStructs(comptime T:type, comptime T1:type) type {
+  
+}
